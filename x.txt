@@ -1,0 +1,35 @@
+# Django Core Settings
+SECRET_KEY=ane8n6k%7r_szb7w#74q)&2nq#(3s07%att6s8$vg7(*df&&#t
+DEBUG=False
+
+# Database (will be provided by Render PostgreSQL)
+DATABASE_URL=postgresql://fagidevdb_user:GlOpUuKMMvMY50v9pnOlXbggkjfhLpzb@dpg-d793e0ruibrs73bek1u0-a/fagidevdb
+
+# Hosts (add your Render URL after deployment)
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# URLs (update after deployment)
+BASE_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000
+
+# Email Settings (Brevo SMTP)
+EMAIL_HOST=smtp-relay.brevo.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-brevo-email
+EMAIL_HOST_PASSWORD=your-brevo-smtp-password
+DEFAULT_FROM_EMAIL=no-reply@yourdomain.com
+
+# M-Pesa Payment Settings
+MPESA_ENVIRONMENT=sandbox
+MPESA_CONSUMER_KEY=your-mpesa-consumer-key
+MPESA_CONSUMER_SECRET=your-mpesa-consumer-secret
+MPESA_SHORTCODE=your-mpesa-shortcode
+MPESA_PASSKEY=your-mpesa-passkey
+
+# Optional: Supabase (if using)
+SUPABASE_URL=
+SUPABASE_KEY=
+
+# Optional: Redis (if using)
+REDIS_URL=memory://
