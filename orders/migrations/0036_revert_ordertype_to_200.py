@@ -15,7 +15,7 @@ def reverse_revert(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orders', '0035_alter_orderprepayment_payment_method_and_more'),
+        ('orders', '0034_fix_low_prices'),
     ]
 
     operations = [
