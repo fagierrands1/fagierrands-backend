@@ -1,0 +1,80 @@
+# Build dependencies
+Cython==3.0.0
+
+# Core Django dependencies
+asgiref>=3.8.1
+Django
+djangorestframework==3.15.0
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.3.1
+django-filter==24.1
+drf-yasg==1.21.7
+PyJWT==2.10.1
+python-dotenv==1.0.0
+pytz==2025.2
+whitenoise==6.6.0
+
+# Database
+dj_database_url==0.5.0
+psycopg[binary]==3.2.3
+
+# Supabase integration
+supabase==2.15.1
+postgrest==1.0.1
+realtime==2.4.3
+supafunc==0.9.4
+
+# Celery and async tasks
+celery==5.5.2
+redis==6.1.0
+django-celery-beat==2.5.0
+django-celery-results==2.5.1
+
+# Channels for WebSockets
+channels==4.2.2
+channels_redis==4.2.1
+websockets==14.2
+
+# Geolocation
+geographiclib==2.0
+geopy==2.4.1
+
+# Web push notifications
+pywebpush==1.14.0
+py-vapid==1.9.0
+
+# Payment processing
+# M-Pesa Daraja API - using requests library (already included)
+
+# File handling and storage
+pillow==11.2.1
+django-storages==1.14.2
+cloudinary==1.41.0
+
+# Server deployment
+gunicorn==22.0.0
+
+# Utilities
+certifi==2025.4.26
+packaging==25.0
+pyparsing==3.2.3
+python-dateutil==2.9.0.post0
+regex==2024.11.6
+requests==2.32.3
+urllib3==2.4.0
+
+# Documentation
+markdown==3.6
+
+# Development tools
+django-debug-toolbar==4.3.0
+
+intasend-python
+setuptools
+
+orjson
+drf-orjson-renderer
+
+groq
+faster_whisper
+xlsxwriter==3.2.0

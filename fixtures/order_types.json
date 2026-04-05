@@ -1,0 +1,42 @@
+[
+    {
+      "model": "orders.ordertype",
+      "pk": 1,
+      "fields": {
+        "name": "Shopping",
+        "description": "Purchase and delivery of groceries, goods, or other items."
+      }
+    },
+    {
+      "model": "orders.ordertype",
+      "pk": 2,
+      "fields": {
+        "name": "Delivery",
+        "description": "Pickup and delivery service for packages, documents, or other items."
+      }
+    },
+    {
+      "model": "orders.ordertype",
+      "pk": 3,
+      "fields": {
+        "name": "Cargo Delivery",
+        "description": "Transport of larger items or cargo requiring special handling."
+      }
+    },
+    {
+      "model": "orders.ordertype",
+      "pk": 4,
+      "fields": {
+        "name": "Banking",
+        "description": "Assistance with banking tasks such as deposits, withdrawals, or transfers."
+      }
+    },
+    {
+      "model": "orders.ordertype",
+      "pk": 5,
+      "fields": {
+        "name": "Handyman",
+        "description": "Home repair, maintenance, or other skilled work services."
+      }
+    }
+  ]

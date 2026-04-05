@@ -1,0 +1,334 @@
+{
+  "info": {
+    "_postman_id": "webhook-test-collection",
+    "name": "IntaSend Webhook Tests",
+    "description": "Complete test collection for IntaSend webhook endpoint validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Payment Completed ✅",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});",
+              "",
+              "pm.test(\"Response time is less than 5000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.completed\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"{{test_invoice_id}}-completed\"\n    },\n    \"mpesa_receipt\": \"{{test_receipt}}\",\n    \"amount\": 100.00,\n    \"currency\": \"KES\",\n    \"phone_number\": \"254700000000\",\n    \"account\": \"Test Account\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test successful payment completion webhook"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Payment Failed ❌",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.failed\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"{{test_invoice_id}}-failed\"\n    },\n    \"reason\": \"Insufficient funds\",\n    \"amount\": 50.00,\n    \"currency\": \"KES\",\n    \"phone_number\": \"254700000000\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test failed payment webhook"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Payment Cancelled 🚫",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.cancelled\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"{{test_invoice_id}}-cancelled\"\n    },\n    \"reason\": \"User cancelled payment\",\n    \"amount\": 75.00,\n    \"currency\": \"KES\",\n    \"phone_number\": \"254700000000\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test cancelled payment webhook"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Unknown Event Type 🤔",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.unknown\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"{{test_invoice_id}}-unknown\"\n    },\n    \"some_field\": \"some_value\",\n    \"test_data\": true\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test handling of unknown webhook events"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Real IntaSend Payload Simulation 🎯",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});",
+              "",
+              "pm.test(\"Response time is acceptable\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.completed\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"INV-{{$randomInt}}\",\n      \"state\": \"COMPLETE\",\n      \"provider\": \"M-PESA\",\n      \"charges\": 100.00,\n      \"net_amount\": 97.00,\n      \"currency\": \"KES\",\n      \"value\": 100.00,\n      \"account\": \"254700000000\",\n      \"api_ref\": \"{{$randomInt}}\",\n      \"host\": \"https://payment.intasend.com\",\n      \"failed_reason\": null,\n      \"failed_code\": null\n    },\n    \"mpesa_receipt\": \"{{$randomAlphaNumeric}}\",\n    \"checkout_id\": \"checkout_{{$randomInt}}\",\n    \"tracking_id\": \"track_{{$randomInt}}\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test with realistic IntaSend webhook payload structure"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Endpoint Health Check 🏥",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Endpoint is accessible\", function () {",
+              "    pm.response.to.not.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Server is responding\", function () {",
+              "    pm.response.to.not.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response time is reasonable\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"health.check\",\n  \"data\": {\n    \"test\": true,\n    \"timestamp\": \"{{$isoTimestamp}}\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Basic health check for webhook endpoint"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "console.log('🧪 Running IntaSend Webhook Test');",
+          "console.log('📡 Webhook URL: ' + pm.environment.get('webhook_url'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "console.log('✅ Test completed: ' + pm.info.requestName);",
+          "console.log('📊 Status: ' + pm.response.status);",
+          "console.log('⏱️ Response time: ' + pm.response.responseTime + 'ms');"
+        ]
+      }
+    }
+  ]
+}

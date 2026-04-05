@@ -1,0 +1,61 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Send Broadcast Notification{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto; padding: 20px;">
+    <h1>Send Broadcast Notification</h1>
+    
+    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin: 20px 0;">
+        <h2 style="margin-top: 0;">{{ broadcast.title }}</h2>
+        <p style="font-size: 16px; line-height: 1.6;">{{ broadcast.message }}</p>
+        
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Type:</strong></td>
+                    <td style="padding: 8px 0;">{{ broadcast.get_notification_type_display }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Target Audience:</strong></td>
+                    <td style="padding: 8px 0;">{{ broadcast.get_target_audience_display }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Recipients:</strong></td>
+                    <td style="padding: 8px 0;"><strong style="color: #007bff;">{{ target_users_count }} users</strong></td>
+                </tr>
+                {% if broadcast.action_url %}
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Action URL:</strong></td>
+                    <td style="padding: 8px 0;"><a href="{{ broadcast.action_url }}" target="_blank">{{ broadcast.action_url }}</a></td>
+                </tr>
+                {% endif %}
+                {% if broadcast.image_url %}
+                <tr>
+                    <td style="padding: 8px 0;"><strong>Image:</strong></td>
+                    <td style="padding: 8px 0;"><a href="{{ broadcast.image_url }}" target="_blank">View Image</a></td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+    
+    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;">
+        <strong>⚠️ Warning:</strong> This will send push notifications to <strong>{{ target_users_count }} users</strong>. 
+        This action cannot be undone.
+    </div>
+    
+    <form method="post" style="margin-top: 30px;">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="button" style="background: #28a745; color: white; padding: 10px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                ✓ Send Now
+            </button>
+            <a href="{% url 'admin:notifications_broadcastnotification_changelist' %}" class="button" style="background: #6c757d; color: white; padding: 10px 30px; border: none; border-radius: 5px; text-decoration: none; display: inline-block; font-size: 16px;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+FAGI ERRANDS - EMAIL VERIFICATION
+
+Hello {{ user.first_name|default:user.username }},
+
+Thank you for signing up with Fagi Errands! To complete your registration and secure your account, please verify your email address using the verification code below:
+
+YOUR VERIFICATION CODE: {{ otp_code }}
+
+Enter this code in the Fagi Errands app to verify your email address and activate your account.
+
+IMPORTANT:
+- This code will expire in {{ expires_in_minutes }} minutes
+- Do not share this code with anyone
+- If you didn't request this verification, please ignore this email
+
+If you're having trouble with verification, you can request a new code in the app.
+
+---
+This email was sent by Fagi Errands.
+If you have any questions, please contact our support team.
+
+Open Fagi Errands App: {{ frontend_url }}

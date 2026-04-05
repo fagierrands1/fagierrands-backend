@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block title %}{% trans "Manual M-Pesa STK Push" %} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>{% trans "Manual M-Pesa STK Push" %}</h1>
+    <p class="help">{% trans "Send an STK push without creating a payment first." %}</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="submit-row">
+            <a class="button" href="{% url 'admin:orders_payment_changelist' %}">{% trans "Cancel" %}</a>
+            <button type="submit" class="default button">{% trans "Send STK Push" %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+import os
+import sys
+import django
+import json
+import logging
+
+# Set up logging to see detailed errors
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fagierrandsbackup.settings')
+
+# Force DEBUG to True for detailed error messages
+os.environ['DEBUG'] = 'True'
+
+django.setup()
+
+from rest_framework.test import APIClient
+from django.urls import reverse
+from django.test import override_settings
+
+@override_settings(DEBUG=True)
+def test_registration_with_debug():
+    print("=== Testing Registration with DEBUG=True ===")
+    
+    client = APIClient()
+    
+    # Test data similar to what the frontend sends
+    import time
+    timestamp = str(int(time.time()))
+    test_data = {
+        'username': f'testuser{timestamp}',
+        'email': f'test{timestamp}@example.com',
+        'password': 'TestPassword123!',
+        'password2': 'TestPassword123!',
+        'first_name': 'Test',
+        'last_name': 'User',
+        'phone_number': '+1234567890',
+        'user_type': 'user',
+        'referral_code': '',  # Empty referral code
+    }
+    
+    try:
+        print(f"Sending data: {json.dumps(test_data, indent=2)}")
+        
+        # Make the POST request to the registration endpoint
+        response = client.post(
+            '/api/accounts/register/',
+            data=test_data,
+            format='json'
+        )
+        
+        print(f"Status Code: {response.status_code}")
+        print(f"Response Headers: {dict(response.headers)}")
+        
+        # Try to parse JSON response if possible
+        try:
+            response_data = response.json()
+            print(f"Response JSON: {json.dumps(response_data, indent=2)}")
+        except:
+            print(f"Response Content (raw): {response.content.decode()}")
+        
+        if response.status_code == 500:
+            print("❌ 500 Internal Server Error detected!")
+        elif response.status_code == 201:
+            print("✅ Registration successful!")
+            # Clean up - delete the test user
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=test_data['username'])
+                user.delete()
+                print("🧹 Test user cleaned up")
+            except User.DoesNotExist:
+                pass
+        elif response.status_code == 400:
+            print("❌ 400 Bad Request - validation error")
+        else:
+            print(f"⚠️ Unexpected status code: {response.status_code}")
+            
+    except Exception as e:
+        print(f"❌ Exception occurred: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+def test_direct_serializer():
+    print("\n=== Testing RegisterSerializer Directly ===")
+    
+    from accounts.serializers import RegisterSerializer
+    
+    import time
+    timestamp = str(int(time.time()))
+    test_data = {
+        'username': f'testuser{timestamp}',
+        'email': f'test{timestamp}@example.com',
+        'password': 'TestPassword123!',
+        'password2': 'TestPassword123!',
+        'first_name': 'Test',
+        'last_name': 'User',
+        'phone_number': '+1234567890',
+        'user_type': 'user',
+        'referral_code': '',  # Empty referral code
+    }
+    
+    try:
+        serializer = RegisterSerializer(data=test_data)
+        if serializer.is_valid():
+            print("✅ Serializer validation passed")
+            user = serializer.save()
+            print(f"✅ User created: {user.username}")
+            # Clean up
+            user.delete()
+            print("🧹 Test user cleaned up")
+        else:
+            print("❌ Serializer validation failed:")
+            print(json.dumps(serializer.errors, indent=2))
+    except Exception as e:
+        print(f"❌ Exception in serializer: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    test_registration_with_debug()
+    test_direct_serializer()

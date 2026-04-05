@@ -1,0 +1,17 @@
+*.pyc
+__pycache__/
+*.sqlite3
+db.sqlite3
+.env
+.env.local
+.env.production
+*.log
+media/
+staticfiles/
+.DS_Store
+*.dump
+venv/
+env/
+*.egg-info/
+dist/
+build/

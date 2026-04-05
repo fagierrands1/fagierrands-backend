@@ -1,0 +1,17 @@
+Verify Your Email Address - Fagi Errands
+
+Hello {{ user.first_name|default:user.username }},
+
+Thank you for registering with Fagi Errands! To complete your registration and start using our services, please verify your email address by clicking the link below:
+
+{{ verification_url }}
+
+IMPORTANT: This verification link will expire in 24 hours. If you don't verify your email within this time, you'll need to request a new verification email.
+
+If you didn't create an account with Fagi Errands, please ignore this email.
+
+Best regards,
+The Fagi Errands Team
+
+---
+This is an automated email. Please do not reply to this message.

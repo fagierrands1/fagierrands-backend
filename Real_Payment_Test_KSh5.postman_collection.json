@@ -1,0 +1,413 @@
+{
+  "info": {
+    "name": "Real Payment Test - KSh 5",
+    "description": "Complete payment flow testing with real KSh 5 payment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "real-payment-test-ksh5",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://fagierrands-server.vercel.app",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "YOUR_AUTH_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "order_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "payment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "phone_number",
+      "value": "254758292353",
+      "type": "string",
+      "description": "Your M-Pesa phone number (254 format)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. User Authentication",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.access) {",
+              "        pm.collectionVariables.set('auth_token', response.access);",
+              "        console.log('✅ Authentication successful');",
+              "        console.log('Token:', response.access.substring(0, 20) + '...');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Authentication failed');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testpassword123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/accounts/login/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "accounts", "login", ""]
+        },
+        "description": "Login to get authentication token. Update email/password with your test credentials."
+      }
+    },
+    {
+      "name": "2. Create Test Order (KSh 5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('order_id', response.id);",
+              "    console.log('✅ Order created successfully');",
+              "    console.log('Order ID:', response.id);",
+              "    console.log('Order Price:', response.price);",
+              "} else {",
+              "    console.log('❌ Order creation failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order_type_id\": 1,\n  \"title\": \"Test Payment Order - KSh 5\",\n  \"description\": \"Small test order for payment integration testing\",\n  \"pickup_address\": \"Test Pickup Location\",\n  \"delivery_address\": \"Test Delivery Location\",\n  \"pickup_latitude\": -1.2921,\n  \"pickup_longitude\": 36.8219,\n  \"delivery_latitude\": -1.3000,\n  \"delivery_longitude\": 36.8300,\n  \"recipient_name\": \"Test Recipient\",\n  \"contact_number\": \"254758292353\",\n  \"price\": 5.00\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", ""]
+        },
+        "description": "Create a test order with KSh 5 amount for payment testing"
+      }
+    },
+    {
+      "name": "3. Initiate Payment (M-Pesa)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('payment_id', response.payment_id);",
+              "    console.log('✅ Payment initiated successfully');",
+              "    console.log('Payment ID:', response.payment_id);",
+              "    console.log('Transaction Reference:', response.transaction_reference);",
+              "    console.log('Amount:', response.amount);",
+              "} else {",
+              "    console.log('❌ Payment initiation failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order\": {{order_id}},\n  \"payment_method\": \"mpesa\",\n  \"phone_number\": \"{{phone_number}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/initiate/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "initiate", ""]
+        },
+        "description": "Initiate M-Pesa payment for the test order"
+      }
+    },
+    {
+      "name": "4. Process Payment (IntaSend STK Push)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.status === 'success') {",
+              "        console.log('✅ STK Push initiated successfully');",
+              "        console.log('Message:', response.message);",
+              "        console.log('Checkout ID:', response.data?.checkout_id);",
+              "        console.log('Invoice ID:', response.data?.invoice_id);",
+              "        console.log('');",
+              "        console.log('📱 CHECK YOUR PHONE FOR M-PESA STK PUSH');",
+              "        console.log('💰 Amount: KSh 5.00');",
+              "        console.log('📞 Phone:', pm.collectionVariables.get('phone_number'));",
+              "        console.log('');",
+              "        console.log('⏰ You have 2 minutes to complete the payment');",
+              "        console.log('🔄 Run \"Check Payment Status\" after completing payment');",
+              "    } else {",
+              "        console.log('❌ STK Push failed');",
+              "        console.log('Message:', response.message);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Payment processing failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/{{payment_id}}/process/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "{{payment_id}}", "process", ""]
+        },
+        "description": "Process the payment through IntaSend (triggers STK Push)"
+      }
+    },
+    {
+      "name": "5. Check Payment Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    console.log('📊 Payment Status Check');",
+              "    console.log('Status:', response.status);",
+              "    console.log('Amount:', response.amount);",
+              "    console.log('Method:', response.payment_method);",
+              "    console.log('Transaction Ref:', response.transaction_reference);",
+              "    console.log('IntaSend Invoice ID:', response.intasend_invoice_id);",
+              "    console.log('Payment Date:', response.payment_date);",
+              "    console.log('');",
+              "    ",
+              "    if (response.status === 'completed') {",
+              "        console.log('🎉 PAYMENT COMPLETED SUCCESSFULLY!');",
+              "        console.log('✅ Webhook received and processed');",
+              "        console.log('✅ Payment integration working perfectly');",
+              "    } else if (response.status === 'processing') {",
+              "        console.log('⏳ Payment is still processing...');",
+              "        console.log('💡 Complete M-Pesa payment on your phone');",
+              "        console.log('🔄 Run this request again in 30 seconds');",
+              "    } else if (response.status === 'pending') {",
+              "        console.log('⏳ Payment is pending...');",
+              "        console.log('💡 Run \"Process Payment\" if not done yet');",
+              "    } else if (response.status === 'failed') {",
+              "        console.log('❌ Payment failed');",
+              "        console.log('💡 You can retry by running \"Process Payment\" again');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to check payment status');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/{{payment_id}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "{{payment_id}}", ""]
+        },
+        "description": "Check the current status of the payment"
+      }
+    },
+    {
+      "name": "6. Check Order Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    console.log('📋 Order Status Check');",
+              "    console.log('Order ID:', response.id);",
+              "    console.log('Status:', response.status);",
+              "    console.log('Title:', response.title);",
+              "    console.log('Price:', response.price);",
+              "    console.log('Created:', response.created_at);",
+              "    console.log('');",
+              "    ",
+              "    if (response.status === 'completed') {",
+              "        console.log('🎉 ORDER COMPLETED SUCCESSFULLY!');",
+              "        console.log('✅ Payment webhook updated order status');",
+              "        console.log('✅ End-to-end integration working perfectly');",
+              "    } else if (response.status === 'payment_pending') {",
+              "        console.log('💰 Order is waiting for payment completion');",
+              "    } else {",
+              "        console.log('📊 Order Status:', response.status);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to check order status');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/{{order_id}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "{{order_id}}", ""]
+        },
+        "description": "Check if the order status was updated after payment completion"
+      }
+    },
+    {
+      "name": "7. Test Webhook (Manual Trigger)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    console.log('✅ Webhook test successful');",
+              "    console.log('Response:', response);",
+              "    console.log('');",
+              "    console.log('💡 This simulates what IntaSend sends when payment completes');",
+              "} else {",
+              "    console.log('❌ Webhook test failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"MANUAL_TEST_{{$timestamp}}\",\n  \"state\": \"COMPLETE\",\n  \"provider\": \"M-PESA\",\n  \"charges\": \"0.15\",\n  \"net_amount\": \"4.85\",\n  \"currency\": \"KES\",\n  \"value\": \"5.00\",\n  \"account\": \"QGH7X8Y9Z0\",\n  \"api_ref\": \"ISL_manual_test_{{$timestamp}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": null,\n  \"failed_code\": null,\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"fagierrands_webhook_2025_secure\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/webhook/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "webhook", ""]
+        },
+        "description": "Manually test the webhook endpoint (simulates IntaSend webhook)"
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set dynamic variables",
+          "pm.collectionVariables.set('timestamp', Date.now());"
+        ]
+      }
+    }
+  ]
+}

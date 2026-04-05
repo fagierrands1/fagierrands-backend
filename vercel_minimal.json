@@ -1,0 +1,6 @@
+{
+  "builds": [{
+    "src": "fagierrandsbackup/wsgi.py",
+    "use": "@vercel/python"
+  }]
+}

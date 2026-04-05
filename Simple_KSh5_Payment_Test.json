@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "Simple KSh 5 Payment Test",
+    "description": "Quick payment test with existing order",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://fagierrands-server.vercel.app"
+    },
+    {
+      "key": "auth_token",
+      "value": "YOUR_AUTH_TOKEN_HERE"
+    },
+    {
+      "key": "order_id",
+      "value": "130"
+    },
+    {
+      "key": "phone_number",
+      "value": "254712345678"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Initiate KSh 5 Payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201 || pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('payment_id', response.payment_id);",
+              "    console.log('✅ Payment initiated');",
+              "    console.log('Payment ID:', response.payment_id);",
+              "    console.log('Amount: KSh', response.amount);",
+              "    console.log('Reference:', response.transaction_reference);",
+              "} else {",
+              "    console.log('❌ Payment initiation failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order\": {{order_id}},\n  \"payment_method\": \"mpesa\",\n  \"phone_number\": \"{{phone_number}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/initiate/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "initiate", ""]
+        }
+      }
+    },
+    {
+      "name": "2. Process Payment (STK Push)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.status === 'success') {",
+              "        console.log('✅ STK Push sent successfully!');",
+              "        console.log('📱 CHECK YOUR PHONE FOR M-PESA STK PUSH');",
+              "        console.log('💰 Amount: KSh 5.00');",
+              "        console.log('📞 Phone:', pm.collectionVariables.get('phone_number'));",
+              "        console.log('⏰ Complete payment within 2 minutes');",
+              "    } else {",
+              "        console.log('❌ STK Push failed:', response.message);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Payment processing failed');",
+              "    console.log('Response:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/{{payment_id}}/process/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "{{payment_id}}", "process", ""]
+        }
+      }
+    },
+    {
+      "name": "3. Check Payment Status",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    console.log('📊 Payment Status:', response.status);",
+              "    console.log('💰 Amount: KSh', response.amount);",
+              "    console.log('📱 Method:', response.payment_method);",
+              "    console.log('🔗 Reference:', response.transaction_reference);",
+              "    ",
+              "    if (response.status === 'completed') {",
+              "        console.log('🎉 PAYMENT COMPLETED SUCCESSFULLY!');",
+              "        console.log('✅ Integration working perfectly!');",
+              "    } else if (response.status === 'processing') {",
+              "        console.log('⏳ Payment processing... Check again in 30 seconds');",
+              "    } else if (response.status === 'pending') {",
+              "        console.log('⏳ Payment pending... Run \"Process Payment\" first');",
+              "    } else {",
+              "        console.log('❌ Payment status:', response.status);",
+              "    }",
+              "} else {",
+              "    console.log('❌ Failed to check payment status');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/payments/{{payment_id}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", "payments", "{{payment_id}}", ""]
+        }
+      }
+    }
+  ]
+}

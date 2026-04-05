@@ -1,0 +1,331 @@
+{
+  "info": {
+    "_postman_id": "official-webhook-test-collection",
+    "name": "IntaSend Official Webhook Tests",
+    "description": "Official IntaSend webhook format tests based on documentation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Official Format - Payment Complete ✅",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});",
+              "",
+              "pm.test(\"Response time is less than 3000ms\", function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"BRZKGPR{{$randomInt}}\",\n  \"state\": \"COMPLETE\",\n  \"provider\": \"M-PESA\",\n  \"charges\": \"3.00\",\n  \"net_amount\": \"97.00\",\n  \"currency\": \"KES\",\n  \"value\": \"100.00\",\n  \"account\": \"QGH{{$randomAlphaNumeric}}{{$randomAlphaNumeric}}\",\n  \"api_ref\": \"ISL_{{$guid}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": null,\n  \"failed_code\": null,\n  \"failed_code_link\": \"https://intasend.com/troubleshooting\",\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"production\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test official IntaSend webhook format for completed payment"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Official Format - Payment Failed ❌",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"FAIL{{$randomInt}}\",\n  \"state\": \"FAILED\",\n  \"provider\": \"M-PESA\",\n  \"charges\": \"0.00\",\n  \"net_amount\": \"0.00\",\n  \"currency\": \"KES\",\n  \"value\": \"50.00\",\n  \"account\": \"254700000000\",\n  \"api_ref\": \"ISL_{{$guid}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": \"Insufficient funds\",\n  \"failed_code\": \"INSUFFICIENT_FUNDS\",\n  \"failed_code_link\": \"https://intasend.com/troubleshooting\",\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"production\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test official IntaSend webhook format for failed payment"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Official Format - Payment Processing ⏳",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"PROC{{$randomInt}}\",\n  \"state\": \"PROCESSING\",\n  \"provider\": \"M-PESA\",\n  \"charges\": \"0.00\",\n  \"net_amount\": \"0.00\",\n  \"currency\": \"KES\",\n  \"value\": \"75.00\",\n  \"account\": \"254700000000\",\n  \"api_ref\": \"ISL_{{$guid}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": null,\n  \"failed_code\": null,\n  \"failed_code_link\": \"https://intasend.com/troubleshooting\",\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"production\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test official IntaSend webhook format for processing payment"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Official Format - Payment Pending 📋",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"PEND{{$randomInt}}\",\n  \"state\": \"PENDING\",\n  \"provider\": \"M-PESA\",\n  \"charges\": \"0.00\",\n  \"net_amount\": \"0.00\",\n  \"currency\": \"KES\",\n  \"value\": \"25.00\",\n  \"account\": \"254700000000\",\n  \"api_ref\": \"ISL_{{$guid}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": null,\n  \"failed_code\": null,\n  \"failed_code_link\": \"https://intasend.com/troubleshooting\",\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"production\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test official IntaSend webhook format for pending payment"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Legacy Format - Payment Completed (Backward Compatibility) 🔄",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook-Test"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": \"payment.completed\",\n  \"data\": {\n    \"invoice\": {\n      \"id\": \"legacy-test-{{$randomInt}}\"\n    },\n    \"mpesa_receipt\": \"LEGACY{{$randomAlphaNumeric}}\",\n    \"amount\": 100.00,\n    \"currency\": \"KES\",\n    \"phone_number\": \"254700000000\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test legacy webhook format for backward compatibility"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Card Payment Complete 💳",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"success\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "User-Agent",
+            "value": "IntaSend-Webhook"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"invoice_id\": \"CARD{{$randomInt}}\",\n  \"state\": \"COMPLETE\",\n  \"provider\": \"CARD-PAYMENT\",\n  \"charges\": \"5.36\",\n  \"net_amount\": \"94.64\",\n  \"currency\": \"KES\",\n  \"value\": \"100.00\",\n  \"account\": \"john.doe@gmail.com\",\n  \"api_ref\": \"ISL_{{$guid}}\",\n  \"host\": \"https://payment.intasend.com\",\n  \"failed_reason\": null,\n  \"failed_code\": null,\n  \"failed_code_link\": \"https://intasend.com/troubleshooting\",\n  \"created_at\": \"{{$isoTimestamp}}\",\n  \"updated_at\": \"{{$isoTimestamp}}\",\n  \"challenge\": \"production\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{webhook_url}}",
+          "host": ["{{webhook_url}}"]
+        },
+        "description": "Test official IntaSend webhook format for card payment"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "console.log('🧪 Running Official IntaSend Webhook Test');",
+          "console.log('📡 Webhook URL: ' + pm.environment.get('webhook_url'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "console.log('✅ Test completed: ' + pm.info.requestName);",
+          "console.log('📊 Status: ' + pm.response.status);",
+          "console.log('⏱️ Response time: ' + pm.response.responseTime + 'ms');"
+        ]
+      }
+    }
+  ]
+}

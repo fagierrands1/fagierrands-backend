@@ -1,0 +1,229 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Fagi Errands - Email Verification",
+		"description": "Test collection for email verification system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Register User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User registered successfully\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('username');",
+							"    pm.expect(response).to.have.property('email');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{test_username}}\",\n    \"email\": \"{{test_email}}\",\n    \"password\": \"testpass123\",\n    \"password2\": \"testpass123\",\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/accounts/register/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"register",
+						""
+					]
+				}
+			}
+		},
+		{
+			"name": "2. Login User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login successful\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('access');",
+							"    pm.environment.set(\"access_token\", response.access);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"{{test_username}}\",\n    \"password\": \"testpass123\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/accounts/login/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"login",
+						""
+					]
+				}
+			}
+		},
+		{
+			"name": "3. Check Email Verification Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Email verification status retrieved\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('email_verified');",
+							"    pm.expect(response).to.have.property('email');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{access_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/accounts/check-email-verification/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"check-email-verification",
+						""
+					]
+				}
+			}
+		},
+		{
+			"name": "4. Resend Verification Email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Resend verification response\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(response).to.have.property('success');",
+							"    pm.expect(response).to.have.property('message');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{test_email}}\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/accounts/resend-verification/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"resend-verification",
+						""
+					]
+				}
+			}
+		},
+		{
+			"name": "5. Verify Email Token (Manual)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/accounts/verify-email/{{verification_token}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"accounts",
+						"verify-email",
+						"{{verification_token}}",
+						""
+					]
+				},
+				"description": "This endpoint returns HTML. Test it in a browser or set verification_token variable manually."
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "test_email",
+			"value": "test@example.com"
+		},
+		{
+			"key": "test_username",
+			"value": "postmantest"
+		},
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "verification_token",
+			"value": ""
+		}
+	]
+}
