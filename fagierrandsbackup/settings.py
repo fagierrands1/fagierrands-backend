@@ -29,7 +29,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',
-    'fagierrands-server.onrender.com,fagierrands-server.vercel.app,fagiserver.fagitone.com,fagierrands-x9ow.vercel.app,localhost,127.0.0.1,fagierrands.onrender.com,fagierrands.vercel.app,testserver,0.0.0.0,192.168.88.160'
+    'fagierrands-backend.onrender.com,fagierrands-server.onrender.com,fagierrands-server.vercel.app,fagiserver.fagitone.com,fagierrands-x9ow.vercel.app,localhost,127.0.0.1,fagierrands.onrender.com,fagierrands.vercel.app,testserver,0.0.0.0,192.168.88.160'
 ).split(',')]
 # Ensure local development IP is always included
 if '192.168.88.160' not in ALLOWED_HOSTS:
@@ -37,6 +37,7 @@ if '192.168.88.160' not in ALLOWED_HOSTS:
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
+    'https://fagierrands-backend.onrender.com',
     'https://fagierrands-server.onrender.com',
 ]
 
@@ -393,7 +394,7 @@ WEBPUSH_EMAIL = os.environ.get('WEBPUSH_EMAIL', 'admin@fagierrands.com')
 FCM_SERVER_KEY = os.environ.get('FCM_SERVER_KEY', '')
 
 # NCBA Till API settings
-BASE_URL = os.environ.get('BASE_URL', 'https://errandserver.fagitone.com')
+BASE_URL = os.environ.get('BASE_URL', 'https://fagierrands-backend.onrender.com')
 NCBA_USERNAME = os.environ.get('NCBA_USERNAME', '').strip()
 NCBA_PASSWORD = os.environ.get('NCBA_PASSWORD', '').strip()
 NCBA_PAYBILL_NO = os.environ.get('NCBA_PAYBILL_NO', '880100').strip()
