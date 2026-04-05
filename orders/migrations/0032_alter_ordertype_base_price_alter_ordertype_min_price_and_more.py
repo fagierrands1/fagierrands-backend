@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orders', '0031_add_assistant_items_total'),
+        ('orders', '0030_ensure_mpesa_columns_exist'),
     ]
 
     operations = [
