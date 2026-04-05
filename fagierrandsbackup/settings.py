@@ -255,6 +255,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://fagierrands-x9ow.vercel.app',
     'https://fagierrands.vercel.app',
     'https://fagierrand.fagitone.com',
+     https://fagierrands-website.onrender.com,
     'http://localhost:3000',
     'http://localhost:5173',
     'http://127.0.0.1:3000',
