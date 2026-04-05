@@ -123,18 +123,14 @@ WSGI_APPLICATION = 'fagierrandsbackup.wsgi.application'
         #}
     #}
 
-# Database configuration tuned for serverless environments to prevent connection exhaustion
-# Prefer DATABASE_URL from environment; default to Supabase transaction pooler (6544)
+# Database configuration for Render
 DATABASES = {
-  # PostgreSQL - New DB
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("PG_DB_NAME", "distinc3_fagierrands"),   # DB name
-        "USER": os.getenv("PG_USER", "distinc3"),        # PostgreSQL user
-        "PASSWORD": os.getenv("PG_PASSWORD", "3{Gm7mZ|r8ds$h;"),        # Leave blank if using peer auth
-        "HOST": os.getenv("PG_HOST", "/var/run/postgresql"),
-        "PORT": os.getenv("PG_PORT", "5432"),
-    },
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True
+    )
 }
 
 
