@@ -3,6 +3,30 @@
 from django.db import migrations, models
 
 
+def remove_fields_if_exist(apps, schema_editor):
+    """Safely remove fields if they exist"""
+    BankingOrder = apps.get_model('orders', 'BankingOrder')
+    db_alias = schema_editor.connection.alias
+    
+    # Check if table exists and has the fields
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='orders_bankingorder' 
+            AND column_name IN ('recipient_account', 'recipient_name')
+        """)
+        existing_columns = [row[0] for row in cursor.fetchall()]
+    
+    # Only remove if they exist
+    if existing_columns:
+        for column in existing_columns:
+            if column == 'recipient_account':
+                schema_editor.remove_field(BankingOrder, BankingOrder._meta.get_field('recipient_account'))
+            elif column == 'recipient_name':
+                schema_editor.remove_field(BankingOrder, BankingOrder._meta.get_field('recipient_name'))
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,14 +34,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='bankingorder',
-            name='recipient_account',
-        ),
-        migrations.RemoveField(
-            model_name='bankingorder',
-            name='recipient_name',
-        ),
+        migrations.RunPython(remove_fields_if_exist, migrations.RunPython.noop),
         migrations.AlterField(
             model_name='bankingorder',
             name='transaction_details',
