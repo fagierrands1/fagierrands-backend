@@ -42,6 +42,8 @@ class CorsMiddleware:
         
         # List of allowed origins (for when we tighten security later)
         allowed_origins = [
+            'https://fagierrands-website.onrender.com',
+            'https://fagierrands-backend-xwqi.onrender.com',
             'https://fagierrands-x9ow.vercel.app',
             'https://fagierrands.vercel.app',
             'https://fagierrand.fagitone.com',

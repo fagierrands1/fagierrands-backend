@@ -29,7 +29,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     'ALLOWED_HOSTS',
-    'fagierrands-backend.onrender.com,fagierrands-server.onrender.com,fagierrands-server.vercel.app,fagiserver.fagitone.com,fagierrands-x9ow.vercel.app,localhost,127.0.0.1,fagierrands.onrender.com,fagierrands.vercel.app,testserver,0.0.0.0,192.168.88.160'
+    'fagierrands-backend-xwqi.onrender.com,fagierrands-backend.onrender.com,fagierrands-server.onrender.com,fagierrands-server.vercel.app,fagiserver.fagitone.com,fagierrands-x9ow.vercel.app,localhost,127.0.0.1,fagierrands.onrender.com,fagierrands.vercel.app,testserver,0.0.0.0,192.168.88.160'
 ).split(',')]
 # Ensure local development IP is always included
 if '192.168.88.160' not in ALLOWED_HOSTS:
@@ -37,8 +37,10 @@ if '192.168.88.160' not in ALLOWED_HOSTS:
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
+    'https://fagierrands-backend-xwqi.onrender.com',
     'https://fagierrands-backend.onrender.com',
     'https://fagierrands-server.onrender.com',
+    'https://fagierrands-website.onrender.com',
 ]
 
 # Application definition
@@ -252,10 +254,11 @@ CORS_ALLOW_ALL_ORIGINS = True  # Temporarily set to True for debugging
 
 # Explicitly allowed origins
 CORS_ALLOWED_ORIGINS = [
+    'https://fagierrands-website.onrender.com',
+    'https://fagierrands-backend-xwqi.onrender.com',
     'https://fagierrands-x9ow.vercel.app',
     'https://fagierrands.vercel.app',
     'https://fagierrand.fagitone.com',
-    'https://fagierrands-website.onrender.com',
     'http://localhost:3000',
     'http://localhost:5173',
     'http://127.0.0.1:3000',
@@ -263,10 +266,11 @@ CORS_ALLOWED_ORIGINS = [
 
 # For older browsers that don't support CORS_ALLOWED_ORIGINS
 CORS_ORIGIN_WHITELIST = [
+    'https://fagierrands-website.onrender.com',
+    'https://fagierrands-backend-xwqi.onrender.com',
     'https://fagierrands-x9ow.vercel.app',
     'https://fagierrands.vercel.app',
     'https://fagierrand.fagitone.com',
-    'https://fagierrands-website.onrender.com',
     'http://localhost:3000',
     'http://localhost:5173',
     'http://127.0.0.1:3000',
@@ -396,7 +400,7 @@ WEBPUSH_EMAIL = os.environ.get('WEBPUSH_EMAIL', 'admin@fagierrands.com')
 FCM_SERVER_KEY = os.environ.get('FCM_SERVER_KEY', '')
 
 # NCBA Till API settings
-BASE_URL = os.environ.get('BASE_URL', 'https://fagierrands-backend.onrender.com')
+BASE_URL = os.environ.get('BASE_URL', 'https://fagierrands-backend-xwqi.onrender.com')
 NCBA_USERNAME = os.environ.get('NCBA_USERNAME', '').strip()
 NCBA_PASSWORD = os.environ.get('NCBA_PASSWORD', '').strip()
 NCBA_PAYBILL_NO = os.environ.get('NCBA_PAYBILL_NO', '880100').strip()
@@ -420,7 +424,7 @@ MPESA_C2B_CONFIRMATION_URL = f"{BASE_URL}/api/orders/payments/mpesa/c2b-confirma
 MPESA_B2C_RESULT_URL = f"{BASE_URL}/api/orders/payments/mpesa/b2c-result/"
 MPESA_B2C_TIMEOUT_URL = f"{BASE_URL}/api/orders/payments/mpesa/b2c-timeout/"
 
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://fagierrands.com')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://fagierrands-website.onrender.com')
 
 
 # Payment Processing Settings
