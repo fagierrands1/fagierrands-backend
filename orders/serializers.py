@@ -285,11 +285,12 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         new_status = validated_data.get('status')
         current_status = instance.status
-        request_user = self.context['request'].user
+        request = self.context.get('request')
+        request_user = request.user if request else None
         
         # Intercept Assistant marking as completed for specific order types
         # If work is done, it should go to payment_pending first
-        if request_user.user_type == 'assistant' and new_status == 'completed':
+        if request_user and request_user.user_type == 'assistant' and new_status == 'completed':
             order_type_name = (instance.order_type.name or '').lower().strip() if instance.order_type else ''
             # All errands should go to payment_pending first so client can pay the final amount
             if any(name in order_type_name for name in ['pickup', 'delivery', 'cargo', 'banking', 'shopping']):
@@ -354,7 +355,9 @@ class AssignOrderSerializer(serializers.ModelSerializer):
         instance.assistant = validated_data.get('assistant')
         instance.status = 'assigned'
         instance.assigned_at = timezone.now()
-        instance.handler = self.context['request'].user  # Set current handler
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            instance.handler = request.user
         instance.save()
         
         # Preserve the frontend-provided price and distance
@@ -406,8 +409,10 @@ class BankingOrderSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         # Automatically set the user from the request
-        user = self.context['request'].user
-        validated_data['user'] = user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+            validated_data['user'] = user
         
         # Extract title if provided
         title = validated_data.pop('title', f"Banking {validated_data.get('transaction_type', 'Transaction')}")
@@ -672,7 +677,9 @@ class AssignHandymanOrderSerializer(serializers.ModelSerializer):
         instance.assistant = validated_data.get('assistant')
         instance.status = 'assigned'
         instance.assigned_at = timezone.now()
-        instance.handler = self.context['request'].user  # Set current handler
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            instance.handler = request.user
         instance.save()
         
         # If there's a main order associated, recalculate its price based on pickup/delivery distance
@@ -805,7 +812,9 @@ class ServiceQuoteSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         # Set the service provider to the current user
-        validated_data['service_provider'] = self.context['request'].user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['service_provider'] = request.user
         return super().create(validated_data)
 
 class ServiceQuoteCreateSerializer(serializers.ModelSerializer):
@@ -821,7 +830,9 @@ class ServiceQuoteCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
     def create(self, validated_data):
-        validated_data['service_provider'] = self.context['request'].user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['service_provider'] = request.user
         return super().create(validated_data)
 
 class ServiceQuoteUpdateSerializer(serializers.ModelSerializer):
