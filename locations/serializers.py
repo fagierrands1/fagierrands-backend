@@ -8,12 +8,14 @@ class LocationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['user'] = user
-        
-        # If this is the first location for the user, mark it as default
-        if validated_data.get('is_default'):
-            Location.objects.filter(user=user, is_default=True).update(is_default=False)
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+            validated_data['user'] = user
+            
+            # If this is the first location for the user, mark it as default
+            if validated_data.get('is_default'):
+                Location.objects.filter(user=user, is_default=True).update(is_default=False)
             
         return super().create(validated_data)
     

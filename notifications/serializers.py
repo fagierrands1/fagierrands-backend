@@ -14,12 +14,14 @@ class PushTokenSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
         
         # Update existing token if it exists
         try:
             token = PushToken.objects.get(
-                user=validated_data['user'],
+                user=validated_data.get('user'),
                 token=validated_data['token']
             )
             token.device_type = validated_data['device_type']
@@ -35,11 +37,13 @@ class UserPushSubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
         
         # Update existing subscription if it exists
         try:
-            subscription = UserPushSubscription.objects.get(user=validated_data['user'])
+            subscription = UserPushSubscription.objects.get(user=validated_data.get('user'))
             subscription.subscription_data = validated_data['subscription_data']
             subscription.user_agent = validated_data.get('user_agent', '')
             subscription.is_active = True
