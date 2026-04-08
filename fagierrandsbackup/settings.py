@@ -126,15 +126,23 @@ WSGI_APPLICATION = 'fagierrandsbackup.wsgi.application'
         #}
     #}
 
-# Database configuration for Render
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        engine='django.db.backends.postgresql_psycopg2',
-        ssl_require=True
-    )
-}
+# Database configuration
+db_url = os.environ.get('DATABASE_URL', '')
+if 'sqlite' in db_url:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=db_url,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
 
 
 # Custom user model

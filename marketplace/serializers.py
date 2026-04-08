@@ -131,9 +131,9 @@ class MarketplaceOrderItemSerializer(serializers.ModelSerializer):
         model = MarketplaceOrderItem
         fields = [
             'id', 'product_name', 'product_image', 'vendor_name',
-            'quantity', 'price_at_purchase', 'created_at'
+            'quantity', 'price_at_purchase'
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id']
 
 
 class MarketplaceOrderSerializer(serializers.ModelSerializer):
