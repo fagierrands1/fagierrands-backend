@@ -1,0 +1,37 @@
+# RENDER ENVIRONMENT VARIABLES - COPY & PASTE
+
+## Add these in Render Dashboard → Environment → Add Environment Variable
+
+### 1. ALLOWED_HOSTS (CRITICAL)
+Key: ALLOWED_HOSTS
+Value: fagierrands-backend-xwqi.onrender.com,fagierrands-backend.onrender.com,fagierrands-server.onrender.com,localhost,127.0.0.1
+
+### 2. BASE_URL (CRITICAL)
+Key: BASE_URL
+Value: https://fagierrands-backend-xwqi.onrender.com
+
+### 3. SECRET_KEY (if not set)
+Key: SECRET_KEY
+Value: ane8n6k%7r_szb7w#74q)&2nq#(3s07%att6s8$vg7(*df&&#t
+
+### 4. DEBUG
+Key: DEBUG
+Value: False
+
+### 5. FRONTEND_URL
+Key: FRONTEND_URL
+Value: https://fagierrands-website.onrender.com
+
+---
+
+## DATABASE_URL
+This should be AUTO-SET by Render when you attach PostgreSQL database.
+If missing, go to: Dashboard → Add Database → PostgreSQL
+
+---
+
+## After Adding Variables:
+1. Click "Save Changes"
+2. Render will automatically redeploy
+3. Wait 2-3 minutes for deployment
+4. Test: https://fagierrands-backend-xwqi.onrender.com/api/docs/
