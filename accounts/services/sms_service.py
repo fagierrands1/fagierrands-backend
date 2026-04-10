@@ -1,9 +1,12 @@
 import os
 import random
 import requests
+import logging
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 class SMSService:
     """Service for sending SMS via TextPie API"""
@@ -34,6 +37,9 @@ class SMSService:
             phone_number = '254' + phone_number[1:]
         
         message = f"Your FagiErrands verification code is: {otp}. Valid for 5 minutes. Do not share this code."
+        
+        # Log OTP in development
+        logger.info(f"📱 SMS OTP for {phone_number}: {otp}")
         
         payload = {
             "api_key": os.getenv('TEXTPIE_API_KEY'),
