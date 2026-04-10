@@ -186,7 +186,7 @@ class LoginView(APIView):
             
             # Handle JSON parsing errors gracefully
             try:
-                email = request.data.get('email')
+                email_or_phone = request.data.get('email')  # Can be email or phone
                 password = request.data.get('password')
             except ParseError as e:
                 print(f"LoginView: JSON parse error: {str(e)}")
@@ -197,27 +197,34 @@ class LoginView(APIView):
                 return Response({"error": "Error parsing request data"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            print(f"LoginView: Login attempt for email: {email}")
+            print(f"LoginView: Login attempt for: {email_or_phone}")
             
-            if not email or not password:
-                print("LoginView: Missing email or password")
-                return Response({"error": "Please provide both email and password"}, 
+            if not email_or_phone or not password:
+                print("LoginView: Missing credentials")
+                return Response({"error": "Please provide both phone/email and password"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            # Try to find user by email since login form uses email
+            # Try to find user by phone number or email
             try:
-                print(f"LoginView: Looking up user with email: {email}")
-                user = User.objects.get(email=email)
+                print(f"LoginView: Looking up user with: {email_or_phone}")
+                # Check if it's a phone number (starts with + or digits)
+                if email_or_phone.startswith('+') or email_or_phone.replace(' ', '').isdigit():
+                    user = User.objects.get(phone_number=email_or_phone)
+                else:
+                    user = User.objects.get(email=email_or_phone)
                 username = user.username
-                print(f"LoginView: Found user with email {email}, username: {username}")
+                print(f"LoginView: Found user, username: {username}")
             except User.DoesNotExist:
-                print(f"LoginView: No user found with email: {email}")
-                return Response({"error": "No account found with this email"}, 
+                print(f"LoginView: No user found with: {email_or_phone}")
+                return Response({"error": "No account found with these credentials"}, 
                                 status=status.HTTP_404_NOT_FOUND)
             except User.MultipleObjectsReturned:
-                print(f"LoginView: Multiple users found with email: {email}")
-                # Handle duplicate email case - get the most recently created one
-                users = User.objects.filter(email=email).order_by('-date_joined')
+                print(f"LoginView: Multiple users found")
+                # Handle duplicate case - get the most recently created one
+                if email_or_phone.startswith('+') or email_or_phone.replace(' ', '').isdigit():
+                    users = User.objects.filter(phone_number=email_or_phone).order_by('-date_joined')
+                else:
+                    users = User.objects.filter(email=email_or_phone).order_by('-date_joined')
                 user = users.first()
                 username = user.username
                 print(f"LoginView: Using most recent user with email {email}, username: {username}")
@@ -238,6 +245,15 @@ class LoginView(APIView):
             
             if user is not None:
                 print(f"LoginView: Authentication successful for user: {username}")
+                
+                # Check if phone is verified
+                if not user.phone_verified:
+                    print(f"LoginView: Phone not verified for user: {username}")
+                    return Response({
+                        "error": "Phone number not verified",
+                        "phone_number": user.phone_number,
+                        "requires_verification": True
+                    }, status=status.HTTP_403_FORBIDDEN)
                 
                 # Generate tokens
                 try:
@@ -488,21 +504,149 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     
     def perform_create(self, serializer):
-        """Create user and send OTP verification email"""
+        """Create user and send OTP via SMS"""
+        from .services.sms_service import SMSService
+        from django.utils import timezone
+        
         user = serializer.save()
         
-        # Send OTP verification email
+        # Generate and send OTP via SMS
         try:
-            from .otp_utils import send_otp_email
-            success, message = send_otp_email(user, self.request)
-            if success:
-                logger.info(f"OTP verification email sent to {user.email}")
+            otp = SMSService.generate_otp()
+            user.phone_otp = otp
+            user.phone_otp_created_at = timezone.now()
+            user.is_active = False  # Deactivate until phone verified
+            user.save()
+            
+            # Send OTP via SMS
+            response = SMSService.send_otp(user.phone_number, otp)
+            
+            if response.get('status_code') == '1000':
+                logger.info(f"OTP sent to {user.phone_number}")
             else:
-                logger.error(f"Failed to send OTP email to {user.email}: {message}")
+                logger.error(f"Failed to send OTP to {user.phone_number}: {response.get('status_desc')}")
         except Exception as e:
-            logger.error(f"Failed to send OTP verification email to {user.email}: {str(e)}")
-            # Don't fail registration if email sending fails
+            logger.error(f"Failed to send OTP to {user.phone_number}: {str(e)}")
+            # Don't fail registration if SMS sending fails
             pass
+    
+    def create(self, request, *args, **kwargs):
+        """Override to return custom response"""
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            'message': 'Registration successful. OTP sent to your phone number.',
+            'phone_number': request.data.get('phone_number'),
+            'next_step': 'verify_phone'
+        }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def verify_phone(request):
+    """Verify phone number with OTP"""
+    from .services.sms_service import SMSService
+    
+    phone_number = request.data.get('phone_number')
+    otp = request.data.get('otp')
+    
+    if not phone_number or not otp:
+        return Response({
+            'error': 'Phone number and OTP are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(phone_number=phone_number)
+    except User.DoesNotExist:
+        return Response({
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if OTP matches
+    if user.phone_otp != otp:
+        return Response({
+            'error': 'Invalid OTP'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if OTP expired
+    if not SMSService.is_otp_valid(user.phone_otp_created_at):
+        return Response({
+            'error': 'OTP has expired. Please request a new one.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Verify phone and activate user
+    user.phone_verified = True
+    user.is_active = True
+    user.is_verified = True
+    user.phone_otp = None
+    user.phone_otp_created_at = None
+    user.save()
+    
+    # Generate auth tokens
+    refresh = RefreshToken.for_user(user)
+    
+    return Response({
+        'message': 'Phone verified successfully',
+        'access': str(refresh.access_token),
+        'refresh': str(refresh),
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'phone_number': user.phone_number,
+            'user_type': user.user_type
+        }
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def resend_otp(request):
+    """Resend OTP to phone number"""
+    from .services.sms_service import SMSService
+    
+    phone_number = request.data.get('phone_number')
+    
+    if not phone_number:
+        return Response({
+            'error': 'Phone number is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(phone_number=phone_number)
+    except User.DoesNotExist:
+        return Response({
+            'error': 'User not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if already verified
+    if user.phone_verified:
+        return Response({
+            'error': 'Phone number already verified'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Generate new OTP
+    otp = SMSService.generate_otp()
+    user.phone_otp = otp
+    user.phone_otp_created_at = timezone.now()
+    user.save()
+    
+    # Send OTP
+    try:
+        response = SMSService.send_otp(user.phone_number, otp)
+        if response.get('status_code') == '1000':
+            return Response({
+                'message': 'OTP sent successfully'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': 'Failed to send OTP',
+                'details': response.get('status_desc')
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        logger.error(f"Failed to resend OTP: {str(e)}")
+        return Response({
+            'error': 'Failed to send OTP'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 @api_view(['POST'])

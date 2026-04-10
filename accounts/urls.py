@@ -6,6 +6,8 @@ from .availability_views import AssistantAvailabilityView
 urlpatterns = [
     # Standard authentication
     path('register/', views.RegisterView.as_view(), name='register'),
+    path('verify-phone/', views.verify_phone, name='verify_phone'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('simple-login/', views.simple_login, name='simple_login'),  # Simple login endpoint
     path('debug/', views.debug_info, name='debug_info'),  # Debug endpoint

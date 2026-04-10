@@ -20,6 +20,12 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     is_verified = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
+    
+    # Phone verification fields
+    phone_verified = models.BooleanField(default=False)
+    phone_otp = models.CharField(max_length=4, null=True, blank=True)
+    phone_otp_created_at = models.DateTimeField(null=True, blank=True)
+    
     # Assistant availability
     is_online = models.BooleanField(default=False, help_text='Whether the assistant is currently online and available')
     # Referral system
