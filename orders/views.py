@@ -10,6 +10,8 @@ from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 from decimal import Decimal, InvalidOperation
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 import logging
 import json
 
@@ -783,6 +785,27 @@ class ShoppingOrderView(APIView):
 class PickupDeliveryOrderCreateView(APIView):
     permission_classes = [IsAuthenticated]
     
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['order_type_id', 'pickup_address', 'delivery_address'],
+            properties={
+                'order_type_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Order type ID'),
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Order title'),
+                'pickup_address': openapi.Schema(type=openapi.TYPE_STRING, description='Pickup address'),
+                'pickup_latitude': openapi.Schema(type=openapi.TYPE_NUMBER, description='Pickup latitude'),
+                'pickup_longitude': openapi.Schema(type=openapi.TYPE_NUMBER, description='Pickup longitude'),
+                'delivery_address': openapi.Schema(type=openapi.TYPE_STRING, description='Delivery address'),
+                'delivery_latitude': openapi.Schema(type=openapi.TYPE_NUMBER, description='Delivery latitude'),
+                'delivery_longitude': openapi.Schema(type=openapi.TYPE_NUMBER, description='Delivery longitude'),
+                'additional_description': openapi.Schema(type=openapi.TYPE_STRING, description='Additional details'),
+                'recipient_name': openapi.Schema(type=openapi.TYPE_STRING, description='Recipient name'),
+                'contact_number': openapi.Schema(type=openapi.TYPE_STRING, description='Contact number'),
+                'approximate_value': openapi.Schema(type=openapi.TYPE_NUMBER, description='Estimated value'),
+            }
+        ),
+        responses={201: 'Order created', 400: 'Bad request'}
+    )
     def post(self, request, *args, **kwargs):
         serializer = PickupDeliveryOrderSerializer(data=request.data)
         
