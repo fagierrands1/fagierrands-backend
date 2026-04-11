@@ -256,6 +256,17 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
+# Swagger settings
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 # CORS settings
 # Temporarily allow all origins for debugging - FORCE REDEPLOY
 CORS_ALLOW_ALL_ORIGINS = True  # Temporarily set to True for debugging

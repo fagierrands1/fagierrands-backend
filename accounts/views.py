@@ -2,12 +2,15 @@ from rest_framework import generics, status, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate, get_user_model
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.http import Http404, JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +22,8 @@ from .serializers import (
     AssistantVerificationSerializer, VerificationStatusSerializer,
     ChangePasswordSerializer, AssistantDetailSerializer,
     EmailVerificationSerializer, ResendVerificationSerializer,
-    ForgotPasswordSerializer, ResetPasswordSerializer
+    ForgotPasswordSerializer, ResetPasswordSerializer,
+    VerifyPhoneSerializer, ResendOTPSerializer, LoginSerializer, LogoutSerializer
 )
 from .email_utils import send_verification_email, verify_email_token, resend_verification_email
 from .supabase_client import get_supabase_client
@@ -169,6 +173,7 @@ def simple_login(request):
         response["Access-Control-Allow-Origin"] = "*"
         return response
 
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
     
@@ -180,13 +185,17 @@ class LoginView(APIView):
         response["Access-Control-Max-Age"] = "86400"  # 24 hours
         return response
     
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'Login successful', 400: 'Invalid credentials', 404: 'User not found'}
+    )
     def post(self, request):
         try:
             print("LoginView: Received login request")
             
             # Handle JSON parsing errors gracefully
             try:
-                email_or_phone = request.data.get('email')  # Can be email or phone
+                phone_number = request.data.get('phone_number')
                 password = request.data.get('password')
             except ParseError as e:
                 print(f"LoginView: JSON parse error: {str(e)}")
@@ -197,26 +206,22 @@ class LoginView(APIView):
                 return Response({"error": "Error parsing request data"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            print(f"LoginView: Login attempt for: {email_or_phone}")
+            print(f"LoginView: Login attempt for: {phone_number}")
             
-            if not email_or_phone or not password:
+            if not phone_number or not password:
                 print("LoginView: Missing credentials")
-                return Response({"error": "Please provide both phone/email and password"}, 
+                return Response({"error": "Please provide both phone number and password"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            # Try to find user by phone number or email
+            # Try to find user by phone number
             try:
-                print(f"LoginView: Looking up user with: {email_or_phone}")
-                # Check if it's a phone number (starts with + or digits)
-                if email_or_phone.startswith('+') or email_or_phone.replace(' ', '').isdigit():
-                    user = User.objects.get(phone_number=email_or_phone)
-                else:
-                    user = User.objects.get(email=email_or_phone)
+                print(f"LoginView: Looking up user with: {phone_number}")
+                user = User.objects.get(phone_number=phone_number)
                 username = user.username
                 print(f"LoginView: Found user, username: {username}")
             except User.DoesNotExist:
-                print(f"LoginView: No user found with: {email_or_phone}")
-                return Response({"error": "No account found with these credentials"}, 
+                print(f"LoginView: No user found with: {phone_number}")
+                return Response({"error": "No account found with this phone number"}, 
                                 status=status.HTTP_404_NOT_FOUND)
             except User.MultipleObjectsReturned:
                 print(f"LoginView: Multiple users found")
@@ -279,6 +284,7 @@ class LoginView(APIView):
                 try:
                     print("LoginView: Preparing response data")
                     response_data = {
+                        'message': 'Login successful',
                         'token': str(refresh.access_token),
                         'refresh': str(refresh),
                         'user_id': user.id,
@@ -540,6 +546,11 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=VerifyPhoneSerializer,
+    responses={200: 'Phone verified successfully', 400: 'Invalid OTP', 404: 'User not found'}
+)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def verify_phone(request):
@@ -598,6 +609,11 @@ def verify_phone(request):
     }, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=ResendOTPSerializer,
+    responses={200: 'OTP resent successfully', 400: 'Phone already verified', 404: 'User not found'}
+)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def resend_otp(request):
@@ -864,6 +880,10 @@ class ChangePasswordView(generics.UpdateAPIView):
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
+    @swagger_auto_schema(
+        request_body=LogoutSerializer,
+        responses={200: 'Successfully logged out', 400: 'Invalid token'}
+    )
     def post(self, request):
         try:
             refresh_token = request.data["refresh"]
@@ -881,66 +901,73 @@ class LogoutView(APIView):
 class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        request_body=ForgotPasswordSerializer,
+        responses={200: 'OTP sent to phone number'}
+    )
     def post(self, request):
+        from .services.sms_service import SMSService
+        from django.utils import timezone
+        
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+        phone_number = serializer.validated_data['phone_number']
 
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(phone_number=phone_number).first()
         if not user:
-            return Response({"message": "If this email exists, an OTP has been sent."}, status=status.HTTP_200_OK)
+            return Response({"message": "If this phone number exists, an OTP has been sent."}, status=status.HTTP_200_OK)
 
-        # Generate a 6-digit OTP and email it
-        otp = EmailOTP.generate_otp() if hasattr(EmailOTP, 'generate_otp') else None
-        if not otp:
-            from random import randint
-            otp = str(randint(100000, 999999))
+        # Generate OTP and send via SMS
+        otp = SMSService.generate_otp()
+        user.phone_otp = otp
+        user.phone_otp_created_at = timezone.now()
+        user.save()
 
-        EmailOTP.objects.create(user=user, otp_code=otp)
-
-        # Send password reset email using proper SMTP utility
+        # Send OTP via SMS
         try:
-            from .otp_utils import send_password_reset_email
-            success, message = send_password_reset_email(user, otp)
-            if success:
-                logger.info(f"Password reset OTP sent to {email}")
+            response = SMSService.send_otp(phone_number, otp)
+            if response.get('status_code') == '1000':
+                logger.info(f"Password reset OTP sent to {phone_number}")
             else:
-                logger.error(f"Failed to send reset OTP to {email}: {message}")
+                logger.error(f"Failed to send reset OTP to {phone_number}: {response.get('status_desc')}")
         except Exception as e:
-            logger.error(f"Failed to send reset OTP to {email}: {e}")
-            # Still return 200 to avoid email enumeration
+            logger.error(f"Failed to send reset OTP to {phone_number}: {e}")
 
-        return Response({"message": "If this email exists, an OTP has been sent."}, status=status.HTTP_200_OK)
+        return Response({"message": "If this phone number exists, an OTP has been sent."}, status=status.HTTP_200_OK)
 
 
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        request_body=ResetPasswordSerializer,
+        responses={200: 'Password reset successfully', 400: 'Invalid OTP'}
+    )
     def post(self, request):
+        from .services.sms_service import SMSService
+        
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+        phone_number = serializer.validated_data['phone_number']
         otp_code = serializer.validated_data['otp_code']
         new_password = serializer.validated_data['new_password']
 
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(phone_number=phone_number).first()
         if not user:
             return Response({"error": "Invalid reset request"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Find unused, non-expired OTP
-        otp = EmailOTP.objects.filter(user=user, otp_code=otp_code, is_used=False).order_by('-created_at').first()
-        if not otp:
-            return Response({"error": "Invalid or expired code"}, status=status.HTTP_400_BAD_REQUEST)
-        if otp.is_expired():
-            return Response({"error": "Code expired"}, status=status.HTTP_400_BAD_REQUEST)
+        # Verify OTP
+        if user.phone_otp != otp_code:
+            return Response({"error": "Invalid OTP code"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not SMSService.is_otp_valid(user.phone_otp_created_at):
+            return Response({"error": "OTP has expired"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Update password
         user.set_password(new_password)
+        user.phone_otp = None
+        user.phone_otp_created_at = None
         user.save()
-
-        # Mark OTP used
-        otp.is_used = True
-        otp.save()
 
         return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
 

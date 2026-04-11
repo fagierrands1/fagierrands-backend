@@ -283,15 +283,32 @@ class ResendVerificationSerializer(serializers.Serializer):
 
 class ForgotPasswordSerializer(serializers.Serializer):
     """Request a password reset OTP"""
-    email = serializers.EmailField(required=True)
+    phone_number = serializers.CharField(required=True, help_text="Phone number")
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(required=True, help_text="Refresh token")
+
+
+class LoginSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, help_text="Phone number (e.g., +254712345678)")
+    password = serializers.CharField(required=True, write_only=True, help_text="Password")
+
+
+class VerifyPhoneSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, help_text="Phone number in international format")
+    otp = serializers.CharField(required=True, max_length=6, help_text="6-digit OTP code")
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, help_text="Phone number in international format")
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    """Reset password using email + OTP"""
-    email = serializers.EmailField(required=True)
-    otp_code = serializers.CharField(required=True, max_length=6)
-    new_password = serializers.CharField(required=True, validators=[validate_password])
-    confirm_password = serializers.CharField(required=True)
+    """Reset password using phone number + OTP"""
+    phone_number = serializers.CharField(required=True, help_text="Phone number")
+    otp_code = serializers.CharField(required=True, max_length=6, help_text="6-digit OTP")
+    new_password = serializers.CharField(required=True, validators=[validate_password], help_text="New password")
 
     def validate(self, attrs):
         if attrs['new_password'] != attrs['confirm_password']:

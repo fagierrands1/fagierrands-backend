@@ -2,6 +2,11 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from .availability_views import AssistantAvailabilityView
+from .password_reset_views import (
+    RequestPasswordResetView,
+    VerifyPasswordResetOTPView,
+    ResetPasswordView
+)
 
 urlpatterns = [
     # Standard authentication
@@ -15,9 +20,10 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
 
-    # Password reset
-    path('forgot-password/', views.ForgotPasswordView.as_view(), name='forgot_password'),
-    path('reset-password/', views.ResetPasswordView.as_view(), name='reset_password'),
+    # Password reset (phone OTP)
+    path('password-reset/request/', RequestPasswordResetView.as_view(), name='request_password_reset'),
+    path('password-reset/verify-otp/', VerifyPasswordResetOTPView.as_view(), name='verify_password_reset_otp'),
+    path('password-reset/reset/', ResetPasswordView.as_view(), name='reset_password_final'),
     
     # Supabase integration endpoints
     path('supabase/create-user/', views.supabase_user_creation, name='supabase_user_creation'),
