@@ -61,6 +61,7 @@ class OrderType(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = (
+        ('draft', 'Draft'),
         ('pending', 'Pending'),
         ('assigned', 'Assigned'),
         ('in_progress', 'In Progress'),
