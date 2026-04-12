@@ -7,6 +7,10 @@ from .password_reset_views import (
     VerifyPasswordResetOTPView,
     ResetPasswordView
 )
+from .password_reset_v1 import (
+    RequestPasswordResetV1,
+    ResetPasswordV1
+)
 
 urlpatterns = [
     # Standard authentication
@@ -20,10 +24,14 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
 
-    # Password reset (phone OTP)
+    # Password reset (phone OTP) - OLD (deprecated)
     path('password-reset/request/', RequestPasswordResetView.as_view(), name='request_password_reset'),
     path('password-reset/verify-otp/', VerifyPasswordResetOTPView.as_view(), name='verify_password_reset_otp'),
     path('password-reset/reset/', ResetPasswordView.as_view(), name='reset_password_final'),
+    
+    # Password reset v1 (NEW - Clean 2-step process)
+    path('v1/password-reset/request/', RequestPasswordResetV1.as_view(), name='password_reset_v1_request'),
+    path('v1/password-reset/reset/', ResetPasswordV1.as_view(), name='password_reset_v1_reset'),
     
     # Supabase integration endpoints
     path('supabase/create-user/', views.supabase_user_creation, name='supabase_user_creation'),

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',  # Needed for Postgres-specific features (GIN/trigram)
     # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',  # Token blacklist for logout
     'corsheaders',
     'drf_yasg',
     'django_filters',
@@ -237,7 +238,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': False,  # Changed to False to avoid dependency on a blacklist model
+    'BLACKLIST_AFTER_ROTATION': True,  # Enable blacklist
     'UPDATE_LAST_LOGIN': False,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,

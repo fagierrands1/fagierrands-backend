@@ -57,7 +57,30 @@ from .views_quotes import (
     quote_status_check
 )
 
+# Import enhanced order views
+from .views_enhanced_order import (
+    EnhancedPickupDeliveryOrderView,
+    PriceCalculationView,
+    EnhancedOrderImageUploadView
+)
+
+# Import 3-step order views
+from .views_three_step_order import (
+    CreateDraftOrderView,
+    UploadOrderImageView,
+    ConfirmOrderView
+)
+
 urlpatterns = [
+    # 3-Step Order Creation (RECOMMENDED)
+    path('v1/draft/', CreateDraftOrderView.as_view(), name='create-draft-order'),
+    path('v1/<int:order_id>/upload-image/', UploadOrderImageView.as_view(), name='upload-order-image'),
+    path('v1/<int:order_id>/confirm/', ConfirmOrderView.as_view(), name='confirm-order'),
+    
+    # Enhanced order endpoints (NEW - Use these!)
+    path('v1/create/', EnhancedPickupDeliveryOrderView.as_view(), name='enhanced-order-create'),
+    path('v1/calculate-price/', PriceCalculationView.as_view(), name='calculate-price-v1'),
+    
     # Existing order endpoints
     path('types/', OrderTypeListView.as_view(), name='order-type-list'),
     path('', OrderListCreateView.as_view(), name='order-list-create'),

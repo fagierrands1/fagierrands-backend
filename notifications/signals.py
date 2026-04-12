@@ -130,6 +130,10 @@ def order_created(sender, instance, created, **kwargs):
     Send notification when a new order is created
     """
     if created:
+        # Skip notification if this is a draft order
+        if hasattr(instance, '_is_draft') and instance._is_draft:
+            return
+            
         # Notify client
         NotificationService.create_notification(
             recipient=instance.client,

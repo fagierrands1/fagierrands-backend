@@ -14,7 +14,8 @@ User = get_user_model()
 
 
 def generate_otp():
-    return str(random.randint(100000, 999999))
+    """Generate a 4-digit OTP for SMS"""
+    return str(random.randint(1000, 9999))
 
 
 def send_otp_sms(phone_number, otp):
