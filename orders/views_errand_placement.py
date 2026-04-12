@@ -1,13 +1,27 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.db import transaction
 from decimal import Decimal
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .models import Order, OrderType, OrderImage
 from .serializers import OrderSerializer, OrderImageSerializer
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['order_type_id', 'distance'],
+        properties={
+            'order_type_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'distance': openapi.Schema(type=openapi.TYPE_NUMBER),
+        }
+    )
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def calculate_errand_price(request):
@@ -59,6 +73,25 @@ def calculate_errand_price(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        required=['order_type_id', 'pickup_address', 'delivery_address'],
+        properties={
+            'order_type_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'title': openapi.Schema(type=openapi.TYPE_STRING),
+            'description': openapi.Schema(type=openapi.TYPE_STRING),
+            'pickup_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'delivery_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'pickup_latitude': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'pickup_longitude': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'delivery_latitude': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'delivery_longitude': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'distance': openapi.Schema(type=openapi.TYPE_NUMBER),
+        }
+    )
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_draft_errand(request):
@@ -129,8 +162,18 @@ def create_draft_errand(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    manual_parameters=[
+        openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, required=True, description='Image file'),
+        openapi.Parameter('caption', openapi.IN_FORM, type=openapi.TYPE_STRING, required=False, description='Image caption'),
+    ],
+    consumes=['multipart/form-data'],
+    responses={201: 'Image uploaded successfully'}
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def upload_errand_image(request, order_id):
     """
     Step 2a: Upload images to draft errand
@@ -177,6 +220,17 @@ def upload_errand_image(request, order_id):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'recipient_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'contact_number': openapi.Schema(type=openapi.TYPE_STRING),
+            'estimated_value': openapi.Schema(type=openapi.TYPE_NUMBER),
+        }
+    )
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_errand_receiver_info(request, order_id):
