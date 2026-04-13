@@ -17,7 +17,7 @@ class User(AbstractUser):
     )
     
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
-    phone_number = models.CharField(max_length=15, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
     
@@ -45,7 +45,12 @@ class User(AbstractUser):
         verbose_name_plural = _('users')
         # Ensure email uniqueness at database level
         constraints = [
-            models.UniqueConstraint(fields=['email'], name='unique_user_email')
+            models.UniqueConstraint(fields=['email'], name='unique_user_email'),
+            models.UniqueConstraint(
+                fields=['phone_number'], 
+                condition=models.Q(phone_number__isnull=False) & ~models.Q(phone_number=''),
+                name='unique_phone_number'
+            )
         ]
     
     def __str__(self):

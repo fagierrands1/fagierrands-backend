@@ -2,8 +2,27 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .models import Profile, AssistantVerification, EmailVerification
+import re
 
 User = get_user_model()
+
+def normalize_phone_number(phone):
+    """Normalize phone number to +254XXXXXXXXX format"""
+    if not phone:
+        return None
+    
+    # Remove all non-digit characters
+    phone = re.sub(r'\D', '', phone)
+    
+    # Handle different formats
+    if phone.startswith('254'):
+        return f'+{phone}'
+    elif phone.startswith('0'):
+        return f'+254{phone[1:]}'
+    elif phone.startswith('7') or phone.startswith('1'):
+        return f'+254{phone}'
+    
+    return f'+{phone}'
 
 class UserSerializer(serializers.ModelSerializer):
     account_manager_name = serializers.SerializerMethodField()
@@ -125,6 +144,20 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password', 'password2', 'first_name', 'last_name', 
                  'user_type', 'phone_number', 'referral_code']
+    
+    def validate_phone_number(self, value):
+        """Validate phone number uniqueness across all formats"""
+        if not value:
+            return value
+        
+        # Normalize the phone number
+        normalized = normalize_phone_number(value)
+        
+        # Check if normalized phone exists
+        if User.objects.filter(phone_number=normalized).exists():
+            raise serializers.ValidationError("Phone number already registered")
+        
+        return normalized
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:

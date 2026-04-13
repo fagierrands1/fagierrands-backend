@@ -23,7 +23,8 @@ from .serializers import (
     ChangePasswordSerializer, AssistantDetailSerializer,
     EmailVerificationSerializer, ResendVerificationSerializer,
     ForgotPasswordSerializer, ResetPasswordSerializer,
-    VerifyPhoneSerializer, ResendOTPSerializer, LoginSerializer, LogoutSerializer
+    VerifyPhoneSerializer, ResendOTPSerializer, LoginSerializer, LogoutSerializer,
+    normalize_phone_number
 )
 from .email_utils import send_verification_email, verify_email_token, resend_verification_email
 from .supabase_client import get_supabase_client
@@ -213,10 +214,14 @@ class LoginView(APIView):
                 return Response({"error": "Please provide both phone number and password"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
+            # Normalize phone number to standard format
+            normalized_phone = normalize_phone_number(phone_number)
+            print(f"LoginView: Normalized phone: {normalized_phone}")
+            
             # Try to find user by phone number
             try:
-                print(f"LoginView: Looking up user with: {phone_number}")
-                user = User.objects.get(phone_number=phone_number)
+                print(f"LoginView: Looking up user with: {normalized_phone}")
+                user = User.objects.get(phone_number=normalized_phone)
                 username = user.username
                 print(f"LoginView: Found user, username: {username}")
             except User.DoesNotExist:
@@ -565,8 +570,11 @@ def verify_phone(request):
             'error': 'Phone number and OTP are required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
+    # Normalize phone number
+    normalized_phone = normalize_phone_number(phone_number)
+    
     try:
-        user = User.objects.get(phone_number=phone_number)
+        user = User.objects.get(phone_number=normalized_phone)
     except User.DoesNotExist:
         return Response({
             'error': 'User not found'
@@ -627,8 +635,11 @@ def resend_otp(request):
             'error': 'Phone number is required'
         }, status=status.HTTP_400_BAD_REQUEST)
     
+    # Normalize phone number
+    normalized_phone = normalize_phone_number(phone_number)
+    
     try:
-        user = User.objects.get(phone_number=phone_number)
+        user = User.objects.get(phone_number=normalized_phone)
     except User.DoesNotExist:
         return Response({
             'error': 'User not found'
