@@ -6,6 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.contrib.auth import get_user_model
 from .models import EmailOTP
+from .serializers import normalize_phone_number
 import random
 import logging
 
@@ -41,14 +42,17 @@ class RequestPasswordResetView(APIView):
         if not phone_number:
             return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_number)
+        
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(phone_number=normalized_phone)
             otp_code = generate_otp()
             
             EmailOTP.objects.filter(user=user, otp_type='password_reset').delete()
             EmailOTP.objects.create(user=user, otp=otp_code, otp_type='password_reset')
             
-            send_otp_sms(phone_number, otp_code)
+            send_otp_sms(normalized_phone, otp_code)
             
             return Response({'message': 'OTP sent to your phone'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -76,8 +80,11 @@ class VerifyPasswordResetOTPView(APIView):
         if not phone_number or not otp:
             return Response({'error': 'Phone number and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_number)
+        
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(phone_number=normalized_phone)
             otp_obj = EmailOTP.objects.filter(
                 user=user, 
                 otp=otp, 
@@ -125,8 +132,11 @@ class ResetPasswordView(APIView):
         if not all([phone_number, otp, new_password]):
             return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
         
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_number)
+        
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(phone_number=normalized_phone)
             otp_obj = EmailOTP.objects.filter(
                 user=user,
                 otp=otp,

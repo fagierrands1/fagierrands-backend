@@ -10,6 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from .serializers import normalize_phone_number
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,8 +49,11 @@ class RequestPasswordResetV1(APIView):
                 'error': 'Phone number is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_number)
+        
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(phone_number=normalized_phone)
         except User.DoesNotExist:
             # Don't reveal if user exists or not (security)
             return Response({
@@ -64,9 +68,9 @@ class RequestPasswordResetV1(APIView):
         
         # Send OTP via SMS
         try:
-            response = SMSService.send_otp(phone_number, otp, purpose='password_reset')
+            response = SMSService.send_otp(normalized_phone, otp, purpose='password_reset')
             if response.get('status_code') == '1000':
-                logger.info(f"Password reset OTP sent to {phone_number}")
+                logger.info(f"Password reset OTP sent to {normalized_phone}")
             else:
                 logger.error(f"Failed to send OTP: {response.get('status_desc')}")
         except Exception as e:
@@ -74,7 +78,7 @@ class RequestPasswordResetV1(APIView):
         
         return Response({
             'message': 'OTP sent to your phone number',
-            'phone_number': phone_number
+            'phone_number': normalized_phone
         }, status=status.HTTP_200_OK)
 
 
@@ -139,8 +143,11 @@ class ResetPasswordV1(APIView):
                 'error': 'Password must be at least 8 characters long'
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        # Normalize phone number
+        normalized_phone = normalize_phone_number(phone_number)
+        
         try:
-            user = User.objects.get(phone_number=phone_number)
+            user = User.objects.get(phone_number=normalized_phone)
         except User.DoesNotExist:
             return Response({
                 'error': 'User not found'
@@ -164,7 +171,7 @@ class ResetPasswordV1(APIView):
         user.phone_otp_created_at = None
         user.save()
         
-        logger.info(f"Password reset successful for {phone_number}")
+        logger.info(f"Password reset successful for {normalized_phone}")
         
         return Response({
             'message': 'Password reset successful. Please login with your new password.'
