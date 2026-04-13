@@ -8,6 +8,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Delete the ReportIssue model
+        migrations.DeleteModel(
+            name='ReportIssue',
+        ),
         # Drop the orphaned reportissue tables if they exist
         migrations.RunSQL(
             sql="DROP TABLE IF EXISTS orders_reportissue_evidence_photos CASCADE;",
