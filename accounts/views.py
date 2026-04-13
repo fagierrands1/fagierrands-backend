@@ -177,6 +177,7 @@ def simple_login(request):
 @method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []  # Disable authentication completely
     
     def options(self, request, *args, **kwargs):
         response = Response({})
@@ -561,6 +562,8 @@ class RegisterView(generics.CreateAPIView):
 @permission_classes([permissions.AllowAny])
 def verify_phone(request):
     """Verify phone number with OTP"""
+    # Disable authentication for this endpoint
+    request._authenticator = None
     from .services.sms_service import SMSService
     
     phone_number = request.data.get('phone_number')
@@ -627,6 +630,8 @@ def verify_phone(request):
 @permission_classes([permissions.AllowAny])
 def resend_otp(request):
     """Resend OTP to phone number"""
+    # Disable authentication for this endpoint
+    request._authenticator = None
     from .services.sms_service import SMSService
     
     phone_number = request.data.get('phone_number')

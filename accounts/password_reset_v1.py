@@ -22,6 +22,7 @@ class RequestPasswordResetV1(APIView):
     Step 1: Request password reset - sends 4-digit OTP to phone
     """
     permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication completely
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -87,6 +88,7 @@ class ResetPasswordV1(APIView):
     Step 2: Reset password with OTP and new password
     """
     permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication completely
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
