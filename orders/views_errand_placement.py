@@ -272,6 +272,31 @@ def update_errand_receiver_info(request, order_id):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    responses={
+        200: openapi.Response(
+            description='Errand confirmed successfully',
+            examples={
+                'application/json': {
+                    'message': 'Errand confirmed successfully!',
+                    'order_id': 13,
+                    'status': 'pending',
+                    'order': {
+                        'id': 13,
+                        'title': 'Package Delivery',
+                        'status': 'pending',
+                        'pickup_address': 'Westlands Mall',
+                        'delivery_address': 'Yaya Centre'
+                    },
+                    'notifications_sent': True
+                }
+            }
+        ),
+        400: 'Validation error or order not in draft status',
+        404: 'Order not found'
+    }
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def confirm_errand(request, order_id):

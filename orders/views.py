@@ -277,6 +277,35 @@ class AssignOrderView(generics.UpdateAPIView):
     
     def get_queryset(self):
         return Order.objects.filter(status='pending')
+    
+    def update(self, request, *args, **kwargs):
+        """Override to return rider details after assignment"""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Get updated instance with rider details
+        instance.refresh_from_db()
+        rider = instance.assistant
+        profile = getattr(rider, 'profile', None) if rider else None
+        
+        response_data = {
+            'message': 'Rider assigned successfully',
+            'order_id': instance.id,
+            'status': instance.status,
+            'rider': {
+                'id': rider.id,
+                'name': f"{rider.first_name} {rider.last_name}".strip() or rider.username,
+                'phone_number': rider.phone_number or 'N/A',
+                'plate_number': profile.plate_number if profile else None,
+                'profile_picture': profile.profile_picture_url if profile else None,
+            } if rider else None,
+            'assigned_at': instance.assigned_at.isoformat() if instance.assigned_at else None,
+        }
+        
+        return Response(response_data)
 
 class ShoppingItemListCreateView(generics.ListCreateAPIView):
     serializer_class = ShoppingItemSerializer

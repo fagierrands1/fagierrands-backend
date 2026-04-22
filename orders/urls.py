@@ -31,6 +31,7 @@ from .views import (
     PriceCalculationView, OrderPriceRealtimeUpdateView,
     GenerateQRView,
 )
+from .views_rider_status import get_order_rider_status
 # Import attachment views
 from .attachments_views import AttachmentUploadView, AttachmentListView, AttachmentDetailView
 from .views_banking import BankListView, BankingOrderListCreateView, BankingOrderDetailView, BankingOrderCancelView
@@ -112,6 +113,9 @@ urlpatterns = [
     path('<int:order_id>/items/', ShoppingItemListCreateView.as_view(), name='shopping-item-list-create'),
     path('<int:order_id>/images/', OrderImageUploadView.as_view(), name='order-image-upload'),
     path('<int:order_id>/review/', OrderReviewCreateView.as_view(), name='order-review-create'),
+    
+    # Rider status endpoint (for "Finding your rider" feature)
+    path('<int:order_id>/rider-status/', get_order_rider_status, name='order-rider-status'),
     
     # Attachment endpoints
     path('<int:order_id>/attachments/upload/', AttachmentUploadView.as_view(), name='order-attachment-upload'),

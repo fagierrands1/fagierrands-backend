@@ -64,6 +64,8 @@ class Profile(models.Model):
     # Wallet fields
     wallet_points = models.PositiveIntegerField(default=0)
     wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # Rider specific fields
+    plate_number = models.CharField(max_length=20, blank=True, null=True, help_text='Vehicle plate number for riders')
     
     def __str__(self):
         return f"{self.user.username}'s Profile"
